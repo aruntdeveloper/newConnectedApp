@@ -1,459 +1,518 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
+  <head>
+    <meta charset="UTF-8" />
     <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
-    <script type="text/javascript" src="https://static.facilio.com/apps-sdk/latest/facilio_apps_sdk.min.js"></script>
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script
+      type="text/javascript"
+      src="https://static.facilio.com/apps-sdk/latest/facilio_apps_sdk.min.js"
+    ></script>
+    <script
+      type="text/javascript"
+      src="https://cdn.jsdelivr.net/npm/chart.js"
+    ></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.0.0"></script>
-</head>
-<style>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone.min.js"></script>
+        <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data-10-year-range.js"></script>
+  </head>
+  <style>
     .loader {
-    margin-top:5vh;
-    margin-left:45vw;
-    margin-right:45vw;
-    width: 42px;
-    height: 42px;
-    border: 4px solid #ff3184;
-    border-bottom-color: transparent;
-    border-radius: 50%;
-    display: inline-block;
-    box-sizing: border-box;
-    animation: rotation 1s linear infinite;
+      margin-top: 5vh;
+      margin-left: 45vw;
+      margin-right: 45vw;
+      width: 42px;
+      height: 42px;
+      border: 4px solid #ff3184;
+      border-bottom-color: transparent;
+      border-radius: 50%;
+      display: inline-block;
+      box-sizing: border-box;
+      animation: rotation 1s linear infinite;
     }
 
     @keyframes rotation {
-    0% {
+      0% {
         transform: rotate(0deg);
-    }
-    100% {
+      }
+      100% {
         transform: rotate(360deg);
+      }
     }
-    } 
-    .emptyPgContent{
-        color:#324056;
-        font-family: 'Aktiv-Grotesk', Helvetica, Arial, sans-serif;
-        font-size:13px;
-        font-weight: 500;
-        letter-spacing: 0.5px;
-        line-height: 25px;
+    .emptyPgContent {
+      color: #324056;
+      font-family: "Aktiv-Grotesk", Helvetica, Arial, sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      line-height: 25px;
     }
-
-</style>
-<body>
-<div id="app">
-    <span v-if="loading" class="loader" ></span>
-    <div :style="[isShowChart?{display:'none'}:null]">
-    <div id="chart-container" style="position:relative;width:80vw; height:80vh; margin:auto;margin-top:10vh;">
-        <canvas id="Chart"></canvas>
-    </div>
-    </div>
-    <div v-if="isShowEmptyPage" >
-        <div style="text-align:center"> 
-            <img src="emptypageicon.svg" alt="emptyPageIcon" style=" width:100px; height:100px;margin:20vh auto auto">
-            <p class="emptyPgContent"> There isn't enough data to power this graph for the given period {{startPeriod}}{{hypen}}{{endPeriod}}</p>
+  </style>
+  <body>
+    <div id="app">
+      <span v-if="loading" class="loader"></span>
+      <div :style="[isShowChart?{display:'none'}:null]">
+        <div
+          id="chart-container"
+          style="
+            position: relative;
+            width: 80vw;
+            height: 80vh;
+            margin: auto;
+            margin-top: 10vh;
+          "
+        >
+          <canvas id="Chart"></canvas>
         </div>
-    </div> 
+      </div>
+      <div v-if="isShowEmptyPage">
+        <div style="text-align: center">
+          <img
+            src="emptypageicon.svg"
+            alt="emptyPageIcon"
+            style="width: 100px; height: 100px; margin: 20vh auto auto"
+          />
+          <p class="emptyPgContent">
+            There isn't enough data to power this graph for the given period
+          </p>
+        </div>
+      </div>
     </div>
-</body>
-<script type="text/javascript">
-     var app = new Vue({
-        el:"#app",
-        data(){
-            return {
-                response:null,
-                isShowEmptyPage:false,
-                startPeriod:null,
-                hypen:null,
-                endPeriod:null,
-                isShowChart:true,
-                loading:true,
-                myChart:null,
-                daysOfMonthLabel:["01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23","24","25","26","27","28","29","30","31"],
-                monthLabel:["01","02","03","04","05","06","07","08","09","10","11","12"],
-                config:{
-                            data: {
-                                labels:null,
-                                datasets:[{
-                                    data: null,
-                                    barPercentage:0.75,
-                                    backgroundColor: '#86acb0',
-                                    hoverBackgroundColor:'#a4c1c4'
-                                }]
-                            },
-                            type:'bar',
-                            plugins: [ChartDataLabels],
-                            options:{
-                                maintainAspectRatio: false,
-                               
-                                plugins: {
-                                    title: {
-                                       display:true
-                                    },
-                                    tooltip:{
-                                        displayColors:false,
-                                        bodySpacing:6,
-                                        bodyFont: {
-                                            size:14
-                                        },
-                                        callbacks:{ 
-                                            title:function(data){
-                                            },
-                                            beforeLabel:function(data){
-                                               return "Created Time: "+ data.label
-                                            },
-                                            label:function(data){
-                                               return "Average of workorders: "+ data.raw
-                                            },
-                                            labelTextColor:function(data){
-                                                return "#979797"
-                                            }
-                                          
-                                        
-                                        },
-                                        backgroundColor:"white",
-                                        borderColor:"#979797",
-                                        borderWidth:"1",
-                                        caretSize:6,
-                                        padding:15
-                                    },
-                                    datalabels:{
-                                    anchor:"end",
-                                    align:"top",
-                                    color:'#86acb0'
-                                    },
-                                    legend: {
-                                       display: false, 
-                                    //    labels:{
-                                    //     display:true
-                                    //    }                                         
-                                            }
-                                        },
-                                scales:{
-                                    x:{
-                                        grid:{
-                                            display:false
-                                        },
-                                        ticks:{
-                                            color:'black'
-                                        }
-                                    },
-                                    y:{
-                                       grid:{
-                                        borderDash:[2,3],
-                                        borderColor:"white"
-                                       },
-                                       ticks:{
-                                        count:5,
-                                        color:"black"
-                                       }
-                                    }
-                                }
-                            }
-                        },
-
-                option:{
-                    method:"put",
-                    data:{
-                        reportId:5993
-                    },
+  </body>
+  <script type="text/javascript">
+    var app = new Vue({
+      el: "#app",
+      data() {
+        return {
+          response: null,
+          isShowEmptyPage: false,
+          //startPeriod: null,
+          //hypen: null,
+          //endPeriod: null,
+          isShowChart: true,
+          loading: true,
+          myChart: null,
+          daysOfMonthLabel: [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06",
+            "07",
+            "08",
+            "09",
+            "10",
+            "11",
+            "12",
+            "13",
+            "14",
+            "15",
+            "16",
+            "17",
+            "18",
+            "19",
+            "20",
+            "21",
+            "22",
+            "23",
+            "24",
+            "25",
+            "26",
+            "27",
+            "28",
+            "29",
+            "30",
+            "31",
+          ],
+          monthLabel: [
+            "01",
+            "02",
+            "03",
+            "04",
+            "05",
+            "06",
+            "07",
+            "08",
+            "09",
+            "10",
+            "11",
+            "12",
+          ],
+          config: {
+            data: {
+              labels: null,
+              datasets: [
+                {
+                  data: null,
+                  barPercentage: 0.75,
+                  backgroundColor: "#86acb0",
+                  hoverBackgroundColor: "#a4c1c4",
                 },
-                optionNew:{
-                    method:"put",
-                    data:{
-                        reportId:5993
-                    }
-                }
+              ],
+            },
+            type: "bar",
+            plugins: [ChartDataLabels],
+            options: {
+              maintainAspectRatio: false,
+
+              plugins: {
+                title: {
+                  display: true,
+                },
+                tooltip: {
+                  displayColors: false,
+                  bodySpacing: 6,
+                  bodyFont: {
+                    size: 14,
+                  },
+                  callbacks: {
+                    title: function (data) {},
+                    beforeLabel: function (data) {
+                      return "Created Time: " + data.label;
+                    },
+                    label: function (data) {
+                      return "Average of workorders: " + data.raw;
+                    },
+                    labelTextColor: function (data) {
+                      return "#979797";
+                    },
+                  },
+                  backgroundColor: "white",
+                  borderColor: "#979797",
+                  borderWidth: "1",
+                  caretSize: 6,
+                  padding: 15,
+                },
+                datalabels: {
+                  anchor: "end",
+                  align: "top",
+                  color: "#86acb0",
+                },
+                legend: {
+                  display: false,
+                },
+              },
+              scales: {
+                x: {
+                  grid: {
+                    display: false,
+                  },
+                  ticks: {
+                    color: "black",
+                  },
+                },
+                y: {
+                  grid: {
+                    borderDash: [2, 3],
+                    borderColor: "white",
+                  },
+                  ticks: {
+                    count: 5,
+                    color: "black",
+                  },
+                },
+              },
+            },
+          },
+
+          option: {
+            method: "put",
+            data: {
+              reportId: 258,
+            },
+          },
+          optionNew: {
+            method: "put",
+            data: {
+              reportId: 258,
+            },
+          },
+        };
+      },
+
+      mounted() {
+        function average(res) {
+          //finding the count of days or date or hour between the given range
+
+          var start, filter, operatorId, startDate, endDate;
+          start = res.data.report.dateRange.startTime;
+          end = res.data.report.dateRange.endTime;
+          filter = res.data.report.xAggrEnum;
+          operatorId = res.data.report.dateOperator;
+          startDate = new Date(start);
+          endDate = new Date(end);
+
+          var daysCount = [];
+          for (let i = 0; i <= 6; i++) {
+            daysCount[i] = 0;
+          }
+
+          var datesCount = [];
+          for (let i = 1; i <= 31; i++) {
+            datesCount[i] = 0;
+          }
+
+          var hoursCount = [];
+          if (filter == "WEEKDAY" || filter == "DAYSOFMONTH") {
+            while (startDate <= endDate) {
+              if (filter == "WEEKDAY") {
+                daysCount[startDate.getDay()] += 1;
+              } else if (filter == "DAYSOFMONTH") {
+                datesCount[startDate.getDate()] += 1;
+              }
+              startDate.setDate(startDate.getDate() + 1);
             }
-        },
+          } else if (filter == "HOURSOFDAY") {
+            if (operatorId == 46 || operatorId == 47 || operatorId == 48) {
+              var lastFullDay = new Date(endDate);
+              lastFullDay.setDate(endDate.getDate() - 1);
+              var millisec = lastFullDay.getTime() - startDate.getTime();
+              var noOfHours = Math.ceil(
+                millisechoursCount / (24 * 60 * 60 * 1000)
+              );
 
-        mounted(){
-            console.log('inside vvue')
-
-            function average(res){
-
-                //finding the count of days or date or hour between the given range       
-                var start,filter,operatorId,startDate,endDate;
-
-                start=res.data.report.dateRange.startTime;
-                end=res.data.report.dateRange.endTime;
-                filter=res.data.report.xAggrEnum;
-                operatorId=res.data.report.dateOperator;
-                startDate=new Date(start);
-                endDate=new Date(end);
-                
-                var daysCount=[];
-                for(let i=0;i<=6;i++){
-                    daysCount[i]=0;
-                }
-
-                var datesCount=[];
-                for (let i=1;i<=31;i++){
-                    datesCount[i]=0;
-                }
-
-                var hoursCount=[];
-                if (filter=="WEEKDAY"||filter=="DAYSOFMONTH"){
-
-                    while(startDate<=endDate){
-                        if(filter=="WEEKDAY"){
-                            daysCount[startDate.getDay()]+=1;
-                        }
-                        else if(filter=="DAYSOFMONTH"){
-                            datesCount[startDate.getDate()]+=1;
-                        }
-                        startDate.setDate(startDate.getDate()+1);   
-                    }
-                }
-                else if(filter=="HOURSOFDAY"){
-
-                    if(operatorId==46|| operatorId==47 || operatorId==48){
-
-                         var lastFullDay=new Date(endDate);
-                         lastFullDay.setDate(endDate.getDate()-1);
-                         var millisec=lastFullDay.getTime()-startDate.getTime();
-                         var noOfHours=Math.ceil(millisechoursCount/(24*60*60*1000));
-
-                         for(let i=0;i<=23;i++){
-                            hoursCount[i]=noOfHours;
-                        }
-                        for(let i=0;i<=endDate.getHours();i++){
-                            hoursCount[i]+=1;
-                        }
-                    }
-                    else{
-                        var millisec=endDate.getTime()-startDate.getTime();
-                        var noOfHours=Math.ceil(millisec/(24*60*60*1000));
-                        for(let i=0;i<=23;i++){
-                            hoursCount[i]=noOfHours;
-                        }
-                    }
-                }
-                console.log(hoursCount);
-
-                //finding the average value
-                //const days=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
-                var data=res.data.reportData.data;
-                function roundoff(num){
-                    if(!Number.isInteger(num)){
-                        return num.toFixed(2);
-                    }
-                    else{
-                        return num
-                    }
-                }
-
-                if (filter=="WEEKDAY"){
-                    var avgWeekDays=["","","","","","",""];
-                    var weekDaysLabel=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-                    for(let i=0;i<data.length;i++){
-                        tempDate=new Date(data[i].X);
-                        avgWeekDays[tempDate.getDay()]=roundoff(data[i].Id/daysCount[tempDate.getDay()]);
-                        //weekDaysLabel[tempDate.getDay()]=days[tempDate.getDay()];
-                    }
-                    console.log(avgWeekDays)
-                    let firstWeekDay=avgWeekDays.shift();
-                    avgWeekDays.push(firstWeekDay);
-                    console.log(avgWeekDays)
-                     return [avgWeekDays,weekDaysLabel];
-
-                    }
-                else if(filter=="DAYSOFMONTH"){
-                    var avgDaysOfMonth=[];
-                    for(let i=0;i<data.length;i++){
-                        tempDate=new Date(data[i].X);
-                        avgDaysOfMonth[tempDate.getDate()]=roundoff(data[i].Id/datesCount[tempDate.getDate()]);
-                        //daysOfMonthLabel[i]=tempDate.getDate();
-                     }
-                    return [avgDaysOfMonth,this.daysOfMonthLabel];
-                }
-                else if(filter=="HOURSOFDAY"){
-                    var avgHoursOfDay=[];
-                    var hoursOfDayLabel=["00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23"];
-                    for(let i=0;i<data.length;i++){
-                        tempDate=new Date(data[i].X);
-                        avgHoursOfDay[tempDate.getHours()]=roundoff(data[i].Id/hoursCount[Math.round(tempDate.getHours())]);
-                        //hoursOfDayLabel[i]=tempDate.getHours();
-                     }
-                    return [avgHoursOfDay,hoursOfDayLabel];
-                }
+              for (let i = 0; i <= 23; i++) {
+                hoursCount[i] = noOfHours;
+              }
+              for (let i = 0; i <= endDate.getHours(); i++) {
+                hoursCount[i] += 1;
+              }
+            } else {
+              var millisec = endDate.getTime() - startDate.getTime();
+              var noOfHours = Math.ceil(millisec / (24 * 60 * 60 * 1000));
+              for (let i = 0; i <= 23; i++) {
+                hoursCount[i] = noOfHours;
+              }
             }
-            // const config = {
-            //                 data: {
-            //                     labels:null,
-            //                     datasets:[{
-            //                         data: null,
-            //                         barPercentage:0.75,
-            //                         backgroundColor: '#86acb0',
-            //                         hoverBackgroundColor:'#a4c1c4'
-            //                     }]
-            //                 },
-            //                 type:'bar',
-            //                 plugins: [ChartDataLabels],
-            //                 options:{
-            //                     maintainAspectRatio: false,
-                               
-            //                     plugins: {
-            //                         tooltip:{
-            //                             displayColors:false,
-            //                             bodySpacing:4,
-            //                             callbacks:{ 
-            //                                 title:function(data){
-            //                                 },
-            //                                 beforeLabel:function(data){
-            //                                    return "Created Time: "+ data.label
-            //                                 },
-            //                                 label:function(data){
-            //                                    return "Average of workorders: "+ data.raw
-            //                                 },
-            //                                 labelTextColor:function(data){
-            //                                     return "#979797"
-            //                                 }
-                                          
-                                        
-            //                             },
-            //                             backgroundColor:"white",
-            //                             borderColor:"#979797",
-            //                             borderWidth:"1",
-            //                             caretSize:6,
-            //                             padding:15
-            //                         },
-            //                         datalabels:{
-            //                         anchor:"end",
-            //                         align:"top",
-            //                         color:'#86acb0'
-            //                         },
-            //                         legend: {
-            //                            display: false, 
-            //                         //    labels:{
-            //                         //     display:true
-            //                         //    }                                         
-            //                                 }
-            //                             },
-            //                     scales:{
-            //                         x:{
-            //                             grid:{
-            //                                 display:false
-            //                             },
-            //                             ticks:{
-            //                                 color:'black'
-            //                             }
-            //                         },
-            //                         y:{
-            //                            grid:{
-            //                             borderDash:[2,3],
-            //                             borderColor:"white"
-            //                            },
-            //                            ticks:{
-            //                             count:5,
-            //                             color:"black"
-            //                            }
-            //                         }
-            //                     }
-            //                 }
-            //             }
+          }
 
-            window.facilioApp= FacilioAppSDK.init();
-            
-            window.facilioApp.on("app.loaded",function(){
-                console.log("Welcome");
-            }) 
-            // window.facilioApp.on('db.filters.changed', (data) => {
-            //     debugger;
-            //         console.log('dashboard filter changed. ')
-            //         this.optionNew.data.startTime=data.dashboardFilter.timelineFilter.startTime;
-            //         this.optionNew.data.endTime=data.dashboardFilter.timelineFilter.endTime;
-            //         window.facilioApp.request.invokeFacilioAPI('/v3/report/execute',this.optionNew).then((res) =>{
-            //         this.response=average(res);
-            //         console.log(res);
-            //         console.log(this.response[0]);
-            //         console.log(this.response[1]);
-            //         myChart.data.datasets[0].data=this.response[0];
-            //         myChart.data.labels=this.response[1];
-            //         // const myChart = new Chart(
-            //         //         document.getElementById('myChart'),
-            //         //         config
-            //         //     ); 
-                    
-            //         })
-            //     })
-            window.facilioApp.request.invokeFacilioAPI('/v3/report/execute',this.option).then((res) =>{
-                this.loading=false;
-                if(res.data.reportData.data.length==0){
-                    var startEp=new Date(res.data.report.dateRange.startTime);
-                    var endEp=new Date(res.data.report.dateRange.endTime);
-                    this.startPeriod=this.daysOfMonthLabel[startEp.getDate()-1]+"/"+this.monthLabel[startEp.getMonth()]+"/"+startEp.getFullYear();
-                    this.endPeriod=this.daysOfMonthLabel[endEp.getDate()-1]+"/"+this.monthLabel[endEp.getMonth()]+"/"+endEp.getFullYear();
-                    this.hypen=" - ";
-                    this.isShowEmptyPage=true;
-                    if(this.startPeriod===this.endPeriod){
-                        this.endPeriod=null;
-                        this.hypern=null;
-                    }
-                }else{
-                    this.isShowChart=false;
-                this.response=average(res);
-                console.log(res);
-                this.config.data.labels=this.response[1];
-                this.config.data.datasets[0].data=this.response[0];
-                this.myChart = new Chart(
-                            document.getElementById('Chart'),
-                            this.config
-                        );}
-                //myChart.register(ChartDataLabels);
+          //finding the average value
 
-                window.facilioApp.on('db.filters.changed', (data) => {
-                     
-                    this.loading=true;
-                    this.isShowChart=true;
-                    this.isShowEmptyPage=false;
-                    console.log('dashboard filter changed. ')
-                    this.optionNew.data.startTime=data.dashboardFilter.timelineFilter.startTime;
-                    this.optionNew.data.endTime=data.dashboardFilter.timelineFilter.endTime;
+          var data = res.data.reportData.data;
+          function roundoff(num) {
+            if (!Number.isInteger(num)) {
+              return num.toFixed(2);
+            } else {
+              return num;
+            }
+          }
 
-                    window.facilioApp.request.invokeFacilioAPI('/v3/report/execute',this.optionNew).then((res) =>{
+          if (filter == "WEEKDAY") {
+            var avgWeekDays = ["", "", "", "", "", "", ""];
+            var weekDaysLabel = [
+              "Mon",
+              "Tue",
+              "Wed",
+              "Thu",
+              "Fri",
+              "Sat",
+              "Sun",
+            ];
+            for (let i = 0; i < data.length; i++) {
+              tempDate = new Date(data[i].X);
+              avgWeekDays[tempDate.getDay()] = roundoff(
+                data[i].Id / daysCount[tempDate.getDay()]
+              );
+            }
 
-                    this.loading=false;
-                    if(res.data.reportData.data.length==0){
-                        var startEp=new Date(res.data.report.dateRange.startTime);
-                    var endEp=new Date(res.data.report.dateRange.endTime);
-                    this.startPeriod=this.daysOfMonthLabel[startEp.getDate()-1]+"/"+this.monthLabel[startEp.getMonth()]+"/"+startEp.getFullYear();
-                    this.endPeriod=this.daysOfMonthLabel[endEp.getDate()-1]+"/"+this.monthLabel[endEp.getMonth()]+"/"+endEp.getFullYear();
-                    this.hypen=" - "
-                        this.isShowEmptyPage=true;
-                        if(this.startPeriod===this.endPeriod){
-                        this.endPeriod=null;
-                        this.hypen=null;
+            let firstWeekDay = avgWeekDays.shift();
+            avgWeekDays.push(firstWeekDay);
+            console.log(avgWeekDays);
+            return [avgWeekDays, weekDaysLabel];
+          } else if (filter == "DAYSOFMONTH") {
+            var daysOfMonth = [
+              "01",
+              "02",
+              "03",
+              "04",
+              "05",
+              "06",
+              "07",
+              "08",
+              "09",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+              "24",
+              "25",
+              "26",
+              "27",
+              "28",
+              "29",
+              "30",
+              "31",
+            ];
+            var avgDaysOfMonth = [];
+            for (let i = 0; i < data.length; i++) {
+              tempDate = new Date(data[i].X);
+
+              avgDaysOfMonth[tempDate.getDate() - 1] = roundoff(
+                data[i].Id / datesCount[tempDate.getDate()]
+              );
+            }
+            return [avgDaysOfMonth, daysOfMonth];
+          } else if (filter == "HOURSOFDAY") {
+            var avgHoursOfDay = [];
+            var hoursOfDayLabel = [
+              "00",
+              "01",
+              "02",
+              "03",
+              "04",
+              "05",
+              "06",
+              "07",
+              "08",
+              "09",
+              "10",
+              "11",
+              "12",
+              "13",
+              "14",
+              "15",
+              "16",
+              "17",
+              "18",
+              "19",
+              "20",
+              "21",
+              "22",
+              "23",
+            ];
+            for (let i = 0; i < data.length; i++) {
+              //tempDate = new Date(data[i].X);
+              //debugger;
+               //tempDate=changeTimeZone(new Date(data[i].X),'Europe/London')
+               tempDate= moment(data[i].X).tz('Europe/London');
+              console.log(tempDate.hours())
+              //tempDate =new Date(tempDate);
+              console.log(tempDate.hours())
+              avgHoursOfDay[tempDate.hours()] = roundoff(
+                data[i].Id / hoursCount[Math.round(tempDate.hours())]
+              );
+              console.log(data[i].Id)
+              console.log(hoursCount[Math.round(tempDate.hours())]);
+              console.log(roundoff(
+                data[i].Id / hoursCount[Math.round(tempDate.hours())]
+              ));
+              //console.log(avgHoursOfDay);
+            }
+            return [avgHoursOfDay, hoursOfDayLabel];
+          }
+        }
+
+        window.facilioApp = FacilioAppSDK.init();
+
+        window.facilioApp.on("app.loaded", function () {});
+
+        window.facilioApp.request
+          .invokeFacilioAPI("/v3/report/execute", this.option)
+          .then((res) => {
+            this.loading = false;
+            if (res.data.reportData.data.length == 0) {
+              // var startEp = new Date(res.data.report.dateRange.startTime);
+              // var endEp = new Date(res.data.report.dateRange.endTime);
+              // this.startPeriod =
+              //   this.daysOfMonthLabel[startEp.getDate() - 1] +
+              //   "/" +
+              //   this.monthLabel[startEp.getMonth()] +
+              //   "/" +
+              //   startEp.getFullYear();
+              // this.endPeriod =
+              //   this.daysOfMonthLabel[endEp.getDate() - 1] +
+              //   "/" +
+              //   this.monthLabel[endEp.getMonth()] +
+              //   "/" +
+              //   endEp.getFullYear();
+              // this.hypen = " - ";
+              this.isShowEmptyPage = true;
+              // if (this.startPeriod === this.endPeriod) {
+              //   this.endPeriod = null;
+              //   this.hypern = null;
+              // }
+            } else {
+              this.isShowChart = false;
+              this.response = average(res);
+              console.log(res);
+              this.config.data.labels = this.response[1];
+              this.config.data.datasets[0].data = this.response[0];
+              this.myChart = new Chart(
+                document.getElementById("Chart"),
+                this.config
+              );
+            }
+
+            window.facilioApp.on("db.filters.changed", (data) => {
+              this.loading = true;
+              this.isShowChart = true;
+              this.isShowEmptyPage = false;
+              this.optionNew.data.startTime =
+                data.dashboardFilter.timelineFilter.startTime;
+              this.optionNew.data.endTime =
+                data.dashboardFilter.timelineFilter.endTime;
+
+              window.facilioApp.request
+                .invokeFacilioAPI("/v3/report/execute", this.optionNew)
+                .then((res) => {
+                  this.loading = false;
+                  console.log(res);
+                  if (res.data.reportData.data.length == 0) {
+                    // var startEp = new Date(res.data.report.dateRange.startTime);
+                    // var endEp = new Date(res.data.report.dateRange.endTime);
+                    // this.startPeriod =
+                    //   this.daysOfMonthLabel[startEp.getDate() - 1] +
+                    //   "/" +
+                    //   this.monthLabel[startEp.getMonth()] +
+                    //   "/" +
+                    //   startEp.getFullYear();
+                    // this.endPeriod =
+                    //   this.daysOfMonthLabel[endEp.getDate() - 1] +
+                    //   "/" +
+                    //   this.monthLabel[endEp.getMonth()] +
+                    //   "/" +
+                    //   endEp.getFullYear();
+                    // this.hypen = " - ";
+                    this.isShowEmptyPage = true;
+                    // if (this.startPeriod === this.endPeriod) {
+                    //   this.endPeriod = null;
+                    //   this.hypen = null;
+                    // }
+                  } else {
+                    if (this.myChart == null) {
+                      this.isShowChart = false;
+
+                      this.response = average(res);
+                      this.config.data.labels = this.response[1];
+                      this.config.data.datasets[0].data = this.response[0];
+
+                      this.myChart = new Chart(
+                        document.getElementById("Chart"),
+                        this.config
+                      );
+                    } else {
+                      this.isShowChart = false;
+                      this.response = average(res);
+                      this.myChart.data.datasets[0].data = this.response[0];
+                      this.myChart.data.labels = this.response[1];
+                      this.myChart.update();
                     }
-                    }
-                    else{
-                    if(this.myChart==null){
-                        this.isShowChart=false;
-                        console.log('no chartb is present')
-                        this.response=average(res);
-                        this.config.data.labels=this.response[1];
-                        this.config.data.datasets[0].data=this.response[0];
-                        console.log(res)
-                        this.myChart = new Chart(
-                            document.getElementById('Chart'),
-                            this.config
-                        );
-                    }
-                    else{
-                    this.isShowChart=false;
-                    this.response=average(res);
-                    console.log(res);
-                    console.log(this.response[0]);
-                    console.log(this.response[1]);
-                    this.myChart.data.datasets[0].data=this.response[0];
-                    this.myChart.data.labels=this.response[1];
-                    this.myChart.update(); 
-                    }
-                    }
-                    })
-                })    
-            })
-     }
-    })
-</script>
+                  }
+                });
+            });
+          });
+      },
+    });
+  </script>
 </html>
