@@ -86,9 +86,7 @@
         return {
           response: null,
           isShowEmptyPage: false,
-          //startPeriod: null,
-          //hypen: null,
-          //endPeriod: null,
+          appResponse:null,
           isShowChart: true,
           loading: true,
           myChart: null,
@@ -219,19 +217,19 @@
           option: {
             method: "put",
             data: {
-              reportId: 258,
+              reportId: 493,
             },
           },
           optionNew: {
             method: "put",
             data: {
-              reportId: 258,
+              reportId: 493,
             },
           },
         };
       },
 
-      mounted() {
+      async mounted() {
         function average(res) {
           //finding the count of days or date or hour between the given range
 
@@ -318,7 +316,6 @@
 
             let firstWeekDay = avgWeekDays.shift();
             avgWeekDays.push(firstWeekDay);
-            console.log(avgWeekDays);
             return [avgWeekDays, weekDaysLabel];
           } else if (filter == "DAYSOFMONTH") {
             var daysOfMonth = [
@@ -392,60 +389,33 @@
               "23",
             ];
             for (let i = 0; i < data.length; i++) {
-              //tempDate = new Date(data[i].X);
-              //debugger;
-               //tempDate=changeTimeZone(new Date(data[i].X),'Europe/London')
                tempDate= moment(data[i].X).tz('Europe/London');
-              console.log(tempDate.hours())
-              //tempDate =new Date(tempDate);
-              console.log(tempDate.hours())
               avgHoursOfDay[tempDate.hours()] = roundoff(
                 data[i].Id / hoursCount[Math.round(tempDate.hours())]
               );
-              console.log(data[i].Id)
-              console.log(hoursCount[Math.round(tempDate.hours())]);
-              console.log(roundoff(
-                data[i].Id / hoursCount[Math.round(tempDate.hours())]
-              ));
-              //console.log(avgHoursOfDay);
             }
             return [avgHoursOfDay, hoursOfDayLabel];
           }
         }
 
         window.facilioApp = FacilioAppSDK.init();
-
-        window.facilioApp.on("app.loaded", function () {});
-
+        
+        let self =this;
+       window.facilioApp.on("app.loaded", (dataApp) => {
+           self.appResponse = dataApp;
+           if(self.appResponse.context.dashboardFilter.timelineFilter!=null){
+           self.option.data.startTime=self.appResponse.context.dashboardFilter.timelineFilter.startTime;
+           self.option.data.endTime=self.appResponse.context.dashboardFilter.timelineFilter.endTime;
+          }
         window.facilioApp.request
-          .invokeFacilioAPI("/v3/report/execute", this.option)
+          .invokeFacilioAPI("/v3/report/execute", self.option)
           .then((res) => {
             this.loading = false;
             if (res.data.reportData.data.length == 0) {
-              // var startEp = new Date(res.data.report.dateRange.startTime);
-              // var endEp = new Date(res.data.report.dateRange.endTime);
-              // this.startPeriod =
-              //   this.daysOfMonthLabel[startEp.getDate() - 1] +
-              //   "/" +
-              //   this.monthLabel[startEp.getMonth()] +
-              //   "/" +
-              //   startEp.getFullYear();
-              // this.endPeriod =
-              //   this.daysOfMonthLabel[endEp.getDate() - 1] +
-              //   "/" +
-              //   this.monthLabel[endEp.getMonth()] +
-              //   "/" +
-              //   endEp.getFullYear();
-              // this.hypen = " - ";
-              this.isShowEmptyPage = true;
-              // if (this.startPeriod === this.endPeriod) {
-              //   this.endPeriod = null;
-              //   this.hypern = null;
-              // }
+              this.isShowEmptyPage = true;         
             } else {
               this.isShowChart = false;
               this.response = average(res);
-              console.log(res);
               this.config.data.labels = this.response[1];
               this.config.data.datasets[0].data = this.response[0];
               this.myChart = new Chart(
@@ -467,28 +437,8 @@
                 .invokeFacilioAPI("/v3/report/execute", this.optionNew)
                 .then((res) => {
                   this.loading = false;
-                  console.log(res);
                   if (res.data.reportData.data.length == 0) {
-                    // var startEp = new Date(res.data.report.dateRange.startTime);
-                    // var endEp = new Date(res.data.report.dateRange.endTime);
-                    // this.startPeriod =
-                    //   this.daysOfMonthLabel[startEp.getDate() - 1] +
-                    //   "/" +
-                    //   this.monthLabel[startEp.getMonth()] +
-                    //   "/" +
-                    //   startEp.getFullYear();
-                    // this.endPeriod =
-                    //   this.daysOfMonthLabel[endEp.getDate() - 1] +
-                    //   "/" +
-                    //   this.monthLabel[endEp.getMonth()] +
-                    //   "/" +
-                    //   endEp.getFullYear();
-                    // this.hypen = " - ";
                     this.isShowEmptyPage = true;
-                    // if (this.startPeriod === this.endPeriod) {
-                    //   this.endPeriod = null;
-                    //   this.hypen = null;
-                    // }
                   } else {
                     if (this.myChart == null) {
                       this.isShowChart = false;
@@ -512,6 +462,8 @@
                 });
             });
           });
+        }
+        );
       },
     });
   </script>
