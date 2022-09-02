@@ -331,9 +331,12 @@
             ];
             for (let i = 0; i < data.length; i++) {
               tempDate = new Date(data[i].X);
-              avgWeekDays[tempDate.getDay()] = Math.round(
+              checkData=Math.round(
                 data[i].Id / daysCount[tempDate.getDay()]
-              );
+              )
+              if(checkData>0){
+                avgWeekDays[tempDate.getDay()]=checkData;
+              };
             }
 
             let firstWeekDay = avgWeekDays.shift();
@@ -377,9 +380,12 @@
             for (let i = 0; i < data.length; i++) {
               tempDate = new Date(data[i].X);
 
-              avgDaysOfMonth[tempDate.getDate() - 1] = Math.round(
+              checkData=Math.round(
                 data[i].Id / datesCount[tempDate.getDate()]
-              );
+              )
+              if(checkData>0){
+                avgDaysOfMonth[tempDate.getDate() - 1]=checkData;
+              };
             }
             return [avgDaysOfMonth, daysOfMonth];
           } else if (filter == "HOURSOFDAY") {
@@ -412,9 +418,12 @@
             ];
             for (let i = 0; i < data.length; i++) {
                tempDate= moment(data[i].X).tz('Europe/London');
-              avgHoursOfDay[tempDate.hours()] = Math.round(
+               checkData= Math.round(
                 data[i].Id / hoursCount[Math.round(tempDate.hours())]
-              );
+              )
+              if (checkData>0){
+                avgHoursOfDay[tempDate.hours()] = checkData;
+              };
             }
             return [avgHoursOfDay, hoursOfDayLabel];
           }

@@ -384,7 +384,7 @@
               )
               if(checkData>0){
                 avgDaysOfMonth[tempDate.getDate() - 1]=checkData;
-              }
+              };
             }
             return [avgDaysOfMonth, daysOfMonth];
           } else if (filter == "HOURSOFDAY") {
@@ -422,7 +422,7 @@
               )
               if (checkData>0){
                 avgHoursOfDay[tempDate.hours()] = checkData;
-              }
+              };
             }
             return [avgHoursOfDay, hoursOfDayLabel];
           }
