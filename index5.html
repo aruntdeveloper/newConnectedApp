@@ -167,7 +167,7 @@
                   callbacks: {
                     title: function (data) {},
                     beforeLabel: function (data) {
-                      return "Arrival Time: " + data.label;
+                      return "Depature Time: " + data.label;
                     },
                     label: function (data) {
                       return "Number of Occupants(Avg): " + data.raw;
@@ -198,7 +198,7 @@
                       top:15
                     },
                     display:true,
-                    text:"Arrival Time",
+                    text:"Depature Time",
                     color:"black",
                     font:{ 
                       size:12
@@ -239,13 +239,13 @@
           option: {
             method: "put",
             data: {
-              reportId: 493,
+              reportId: 569,
             },
           },
           optionNew: {
             method: "put",
             data: {
-              reportId: 493,
+              reportId: 569,
             },
           },
         };
