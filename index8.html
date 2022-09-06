@@ -90,8 +90,6 @@
           isShowChart: true,
           loading: true,
           myChart: null,
-          createdTime:false,
-          array:false,
           daysOfMonthLabel: [
             "01",
             "02",
@@ -172,7 +170,7 @@
                       return "Depature Time: " + data.label;
                     },
                     label: function (data) {
-                      return "Number of Occupants(Avg): " + data.raw;
+                      return "Number of Visitors(Avg): " + data.raw;
                     },
                     labelTextColor: function (data) {
                       return "#979797";
@@ -219,7 +217,7 @@
                       bottom:15
                     },
                     display:true,
-                    text:"Number of Occupants(Avg)",
+                    text:"Number of Visitors(Avg)",
                     color:"black",
                     font:{ 
                       size:12
@@ -241,20 +239,20 @@
           option: {
             method: "put",
             data: {
-              reportId: 569,
+              reportId: 574,
             },
           },
           optionNew: {
             method: "put",
             data: {
-              reportId: 569,
+              reportId: 574,
             },
           },
         };
       },
 
       async mounted() {
-        function average(res,filterCheck,array) {
+        function average(res) {
           //finding the count of days or date or hour between the given range
 
           var start, filter, operatorId, startDate, endDate;
@@ -286,27 +284,27 @@
               startDate.setDate(startDate.getDate() + 1);
             }
           } else if (filter == "HOURSOFDAY") {
-            removeDay=0
-              var millisec = endDate.getTime()-startDate.getTime();
-              var noOfHours = Math.ceil(millisec / (24 * 60 * 60 * 1000));
-              if(filterCheck==true){
-                   while(startDate<=endDate){
-                    if(startDate.getDay()==0){
-                      day=7
-                    }
-                    else{ 
-                      day=startDate.getDay()
-                    }
-                     if(array.includes(day.toString())){ }
-                     else{ 
-                      removeDay+=1
-                     }
-                    startDate.setDate(startDate.getDate() + 1);
-                   }   
-              }
+            if (operatorId == 46 || operatorId == 47 || operatorId == 48) {
+              var lastFullDay = new Date(endDate);
+              lastFullDay.setDate(endDate.getDate() - 1);
+              var millisec = lastFullDay.getTime() - startDate.getTime();
+              var noOfHours = Math.ceil(
+                millisechoursCount / (24 * 60 * 60 * 1000)
+              );
+
               for (let i = 0; i <= 23; i++) {
-                hoursCount[i] = noOfHours-removeDay
+                hoursCount[i] = noOfHours;
               }
+              for (let i = 0; i <= endDate.getHours(); i++) {
+                hoursCount[i] += 1;
+              }
+            } else {
+              var millisec = endDate.getTime() - startDate.getTime();
+              var noOfHours = Math.ceil(millisec / (24 * 60 * 60 * 1000));
+              for (let i = 0; i <= 23; i++) {
+                hoursCount[i] = noOfHours;
+              }
+            }
           }
 
           //finding the average value
@@ -331,19 +329,45 @@
               "Sat",
               "Sun",
             ];
-            for (let i = 0; i < data.length; i++) {
-              tempDate = new Date(data[i].X);
+            console.log(res)
+            if(res.data.report.dataPoints[0].groupByFields!==undefined){
+               groupbyField=res.data.report.dataPoints[0].groupByFields[0];
+               var avgWeekDaysGroupBy={
+               }
+               var keys=Object.keys(groupbyField.lookupMap)
+               console.log(keys)
+               keys.forEach(function(ids){
+                avgWeekDaysGroupBy[ids]=[0,0,0,0,0,0,0];
+               })
+
+               for(let i=0;i<=data.length;i++){
+                tempDate=new Date(data[i].X)
+                for (let j=0;j<=groupbyField.fieldName.length)
+               }
+
+            }
+            else{
+                for (let i = 0; i < data.length; i++) {
+                  debugger;       
+                  tempDate = new Date(data[i].X);
               checkData=Math.round(
                 data[i].Id / daysCount[tempDate.getDay()]
               )
               if(checkData>0){
-                avgWeekDays[tempDate.getDay()]=checkData;
-              };
+                if(tempDate.getDay()==0){
+                  avgWeekDays[6]=checkData;
+                }
+                else if(tempDate.getDay()==1){ 
+                  avgWeekDays[0]=checkData;
+                }
+                  else{
+                  avgWeekDays[tempDate.getDay()-1]=checkData;
+                }
+              }
+              console.log(avgWeekDays, weekDaysLabel);
             }
-
-            let firstWeekDay = avgWeekDays.shift();
-            avgWeekDays.push(firstWeekDay);
             return [avgWeekDays, weekDaysLabel];
+          }
           } else if (filter == "DAYSOFMONTH") {
             var daysOfMonth = [
               "01",
@@ -436,24 +460,6 @@
         let self =this;
        window.facilioApp.on("app.loaded", (dataApp) => {
            self.appResponse = dataApp;
-           this.createdTime=false;
-           if (self.appResponse.context.dashboardFilter.userFilters!==undefined && self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].defaultValues==85){
-                 this.createdTime=true;
-                 fieldNameOfCreatedTime=self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].field.name
-           createdTimeFilter= {
-           }
-           createdTimeFilter[fieldNameOfCreatedTime]={
-            operatorId:85,
-            value:[]
-           }
-                 this.array=createdTimeFilter[fieldNameOfCreatedTime].value
-                 rangeOfCreatedTime =self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].selectedSliderRangeValues
-                 for(let i=1;i<=rangeOfCreatedTime[1];i++){
-                  this.array[i-1]=i.toString();
-                 }
-                 createdTimeFilter=JSON.stringify(createdTimeFilter)
-                 self.option.data.filters=createdTimeFilter;
-           }
            if(self.appResponse.context.dashboardFilter.timelineFilter!=null){
            self.option.data.startTime=self.appResponse.context.dashboardFilter.timelineFilter.startTime;
            self.option.data.endTime=self.appResponse.context.dashboardFilter.timelineFilter.endTime;
@@ -466,7 +472,7 @@
               this.isShowEmptyPage = true;         
             } else {
               this.isShowChart = false;
-              this.response = average(res,this.createdTime,this.array);
+              this.response = average(res);
               this.config.data.labels = this.response[1];
               this.config.data.datasets[0].data = this.response[0];
               this.myChart = new Chart(
@@ -483,30 +489,7 @@
                 data.dashboardFilter.timelineFilter.startTime;
               this.optionNew.data.endTime =
                 data.dashboardFilter.timelineFilter.endTime;
-                if (self.appResponse.context.dashboardFilter.userFilters!==undefined  && self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].defaultValues==85){
-                 this.createdTime=true;
-                 createdTimeFilter= {
 
-}
-createdTimeFilter[fieldNameOfCreatedTime]={
- operatorId:85,
- value:[]
-}
-                 if(data.dashboardFilter.userFilters.filterMeta[0].dateTimeValues!==undefined){
-                      this.array=data.dashboardFilter.userFilters.filterMeta[0].dateTimeValues
-                       
-                 }else{ 
-                  rangeOfCreatedTime =data.dashboardFilter.userFilters.filterMeta[0].selectedSliderRangeValues
-                  for(let i=rangeOfCreatedTime[0];i<=rangeOfCreatedTime[1];i++){
-                
-                  this.array[i-1]=i.toString();
-                 }
-                 }
-                 createdTimeFilter[fieldNameOfCreatedTime].value=this.array
-                 createdTimeFilter=JSON.stringify(createdTimeFilter)
-              
-                 self.optionNew.data.filters=createdTimeFilter;
-           }
               window.facilioApp.request
                 .invokeFacilioAPI("/v3/report/execute", this.optionNew)
                 .then((res) => {
@@ -517,7 +500,7 @@ createdTimeFilter[fieldNameOfCreatedTime]={
                     if (this.myChart == null) {
                       this.isShowChart = false;
 
-                      this.response = average(res,this.createdTime,this.array);
+                      this.response = average(res);
                       this.config.data.labels = this.response[1];
                       this.config.data.datasets[0].data = this.response[0];
 
@@ -527,7 +510,7 @@ createdTimeFilter[fieldNameOfCreatedTime]={
                       );
                     } else {
                       this.isShowChart = false;
-                      this.response = average(res,this.createdTime,this.array);
+                      this.response = average(res);
                       this.myChart.data.datasets[0].data = this.response[0];
                       this.myChart.data.labels = this.response[1];
                       this.myChart.update();

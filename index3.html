@@ -90,6 +90,8 @@
           isShowChart: true,
           loading: true,
           myChart: null,
+          createdTime:false,
+          array:false,
           daysOfMonthLabel: [
             "01",
             "02",
@@ -284,27 +286,27 @@
               startDate.setDate(startDate.getDate() + 1);
             }
           } else if (filter == "HOURSOFDAY") {
-            if (operatorId == 46 || operatorId == 47 || operatorId == 48) {
-              var lastFullDay = new Date(endDate);
-              lastFullDay.setDate(endDate.getDate() - 1);
-              var millisec = lastFullDay.getTime() - startDate.getTime();
-              var noOfHours = Math.ceil(
-                millisechoursCount / (24 * 60 * 60 * 1000)
-              );
-
-              for (let i = 0; i <= 23; i++) {
-                hoursCount[i] = noOfHours;
-              }
-              for (let i = 0; i <= endDate.getHours(); i++) {
-                hoursCount[i] += 1;
-              }
-            } else {
-              var millisec = endDate.getTime() - startDate.getTime();
+            removeDay=0
+              var millisec = endDate.getTime()-startDate.getTime();
               var noOfHours = Math.ceil(millisec / (24 * 60 * 60 * 1000));
-              for (let i = 0; i <= 23; i++) {
-                hoursCount[i] = noOfHours;
+              if(filterCheck==true){
+                   while(startDate<=endDate){
+                    if(startDate.getDay()==0){
+                      day=7
+                    }
+                    else{ 
+                      day=startDate.getDay()
+                    }
+                     if(array.includes(day.toString())){ }
+                     else{ 
+                      removeDay+=1
+                     }
+                    startDate.setDate(startDate.getDate() + 1);
+                   }   
               }
-            }
+              for (let i = 0; i <= 23; i++) {
+                hoursCount[i] = noOfHours-removeDay
+              }
           }
 
           //finding the average value
@@ -434,6 +436,24 @@
         let self =this;
        window.facilioApp.on("app.loaded", (dataApp) => {
            self.appResponse = dataApp;
+           this.createdTime=false;
+           if (self.appResponse.context.dashboardFilter.userFilters!==undefined && self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].defaultValues==85){
+                 this.createdTime=true;
+                 fieldNameOfCreatedTime=self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].field.name
+           createdTimeFilter= {
+           }
+           createdTimeFilter[fieldNameOfCreatedTime]={
+            operatorId:85,
+            value:[]
+           }
+                 this.array=createdTimeFilter[fieldNameOfCreatedTime].value
+                 rangeOfCreatedTime =self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].selectedSliderRangeValues
+                 for(let i=1;i<=rangeOfCreatedTime[1];i++){
+                  this.array[i-1]=i.toString();
+                 }
+                 createdTimeFilter=JSON.stringify(createdTimeFilter)
+                 self.option.data.filters=createdTimeFilter;
+           }
            if(self.appResponse.context.dashboardFilter.timelineFilter!=null){
            self.option.data.startTime=self.appResponse.context.dashboardFilter.timelineFilter.startTime;
            self.option.data.endTime=self.appResponse.context.dashboardFilter.timelineFilter.endTime;
@@ -446,7 +466,7 @@
               this.isShowEmptyPage = true;         
             } else {
               this.isShowChart = false;
-              this.response = average(res);
+              this.response = average(res,this.createdTime,this.array);
               this.config.data.labels = this.response[1];
               this.config.data.datasets[0].data = this.response[0];
               this.myChart = new Chart(
@@ -463,6 +483,34 @@
                 data.dashboardFilter.timelineFilter.startTime;
               this.optionNew.data.endTime =
                 data.dashboardFilter.timelineFilter.endTime;
+                this.createdTime=false;
+
+if (self.appResponse.context.dashboardFilter.userFilters!==undefined  && self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].defaultValues==85){
+      this.createdTime=true;
+      createdTimeFilter= {
+
+}
+createdTimeFilter[fieldNameOfCreatedTime]={
+operatorId:85,
+value:[]
+}
+      if(data.dashboardFilter.userFilters.filterMeta[0].dateTimeValues!==undefined){
+           this.array=data.dashboardFilter.userFilters.filterMeta[0].dateTimeValues
+            
+      }else{ 
+       rangeOfCreatedTime =data.dashboardFilter.userFilters.filterMeta[0].selectedSliderRangeValues
+       for(let i=rangeOfCreatedTime[0];i<=rangeOfCreatedTime[1];i++){
+     
+       this.array[i-1]=i.toString();
+      }
+      }
+      createdTimeFilter[fieldNameOfCreatedTime].value=this.array
+      createdTimeFilter=JSON.stringify(createdTimeFilter)
+   
+      self.optionNew.data.filters=createdTimeFilter;
+}
+
+
 
               window.facilioApp.request
                 .invokeFacilioAPI("/v3/report/execute", this.optionNew)
@@ -474,7 +522,7 @@
                     if (this.myChart == null) {
                       this.isShowChart = false;
 
-                      this.response = average(res);
+                      this.response = average(res,this.createdTime,this.array);
                       this.config.data.labels = this.response[1];
                       this.config.data.datasets[0].data = this.response[0];
 
@@ -484,7 +532,7 @@
                       );
                     } else {
                       this.isShowChart = false;
-                      this.response = average(res);
+                      this.response = average(res,this.createdTime,this.array);
                       this.myChart.data.datasets[0].data = this.response[0];
                       this.myChart.data.labels = this.response[1];
                       this.myChart.update();
