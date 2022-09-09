@@ -47,6 +47,23 @@
       letter-spacing: 0.5px;
       line-height: 25px;
     }
+    #chartjs-tooltip {
+			opacity: 1;
+			position: absolute;
+			background-color:white;
+			color: #979797 ;
+			border-radius: 5px;
+			-webkit-transition: all .1s ease;
+			transition: all .1s ease;
+			pointer-events: none;
+			-webkit-transform: translate(-50%, 0);
+			transform: translate(-50%, 0);
+      padding:10px;
+      box-shadow: rgba(0, 0, 0, 0.16) 0px 3px 6px, rgba(0, 0, 0, 0.23) 0px 3px 6px;
+      /* border-color:#979797 ; */
+    }
+
+
   </style>
   <body>
     <div id="app">
@@ -90,6 +107,8 @@
           isShowChart: true,
           loading: true,
           myChart: null,
+          createdTime:false,
+          array:false,
           daysOfMonthLabel: [
             "01",
             "02",
@@ -137,7 +156,144 @@
             "11",
             "12",
           ],
-          config: {
+          // config: {
+          //   data: {
+          //     labels: null,
+          //     datasets: [
+          //       {
+          //         data: null,
+          //         barPercentage: 0.75,
+          //         backgroundColor: "#00365F",
+          //         hoverBackgroundColor: "#406887",
+          //       },
+          //     ],
+          //   },
+          //   type: "bar",
+          //   plugins: [ChartDataLabels],
+          //   options: {
+          //     interaction:{ 
+          //       mode:'index'
+          //     },
+          //     maintainAspectRatio: false,
+
+          //     plugins: {
+          //       title: {
+          //         display: true,
+          //       },
+          //       tooltip: {
+          //         displayColors: true,
+          //         boxPadding:5,
+          //         bodySpacing: 8,
+          //         bodyFont: {
+          //           size: 14,
+          //         },
+          //         // callbacks: {
+          //         //   title: function (data) {
+          //         //     console.log(data)
+          //         //     console.log(data[0].label)
+          //         //     return data[0].label;
+          //         //   },
+          //         //   // beforeLabel: function (data) {
+          //         //   //   //console.log("tittle",data)
+          //         //   //   return "Arrival Time: " + data.label;
+          //         //   // },
+          //         //   // label: function (data) {
+          //         //   //   return "Number of Occupants(Avg): " + data.raw;
+          //         //   // },
+          //         //   // labelTextColor: function (data) {
+          //         //   //   return "#979797";
+          //         //   // },
+          //         // },
+          //         callbacks:{ 
+          //           label: function (data){
+          //             console.log(data)
+          //             return data.dataset.name +" "+data.raw
+          //           },
+          //           labelTextColor: function(data){
+          //             return "#979797"
+          //           }
+          //         },
+          //         titleColor:"black",
+          //         backgroundColor: "white",
+          //         borderColor: "#979797",
+          //         borderWidth: "1",
+          //         caretSize: 6,
+          //         padding: 15,
+          //         custom:tool
+          //       },
+          //       datalabels: {
+          //         display:false
+          //         // anchor: "end",
+          //         // align: "top",
+          //         // color: "#00365F",
+          //       },
+          //       legend: {
+          //         display: false,
+          //       },
+          //     },
+          //     scales: {
+          //       x: {
+          //         stacked:true,
+          //         title:{ 
+          //           padding:{ 
+          //             top:15
+          //           },
+          //           display:true,
+          //           text:"Arrival Time",
+          //           color:"black",
+          //           font:{ 
+          //             size:12
+          //           }
+          //         },
+          //         grid: {
+          //           display: false,
+          //         },
+          //         ticks: {
+          //           color: "black",
+          //         },
+          //       },
+          //       y: {
+          //         title:{ 
+          //           padding:{ 
+          //             bottom:15
+          //           },
+          //           display:true,
+          //           text:"Number of Occupants(Avg)",
+          //           color:"black",
+          //           font:{ 
+          //             size:12
+          //           }
+          //         },
+          //         grid: {
+          //           borderDash: [2, 3],
+          //           borderColor: "white",
+          //         },
+          //         ticks: {
+          //           count: 5,
+          //           color: "black",
+          //         },
+          //       },
+          //     },
+          //   },
+          // },
+          option: {
+            method: "put",
+            data: {
+              reportId: 574,
+            },
+          },
+          optionNew: {
+            method: "put",
+            data: {
+              reportId: 574,
+            },
+          },
+        };
+      },
+
+      async mounted() {
+
+        config= {
             data: {
               labels: null,
               datasets: [
@@ -152,6 +308,9 @@
             type: "bar",
             plugins: [ChartDataLabels],
             options: {
+              interaction:{ 
+                mode:'index'
+              },
               maintainAspectRatio: false,
 
               plugins: {
@@ -159,33 +318,134 @@
                   display: true,
                 },
                 tooltip: {
-                  displayColors: false,
-                  bodySpacing: 6,
-                  bodyFont: {
-                    size: 14,
-                  },
-                  callbacks: {
-                    title: function (data) {},
-                    beforeLabel: function (data) {
-                      return "Depature Time: " + data.label;
-                    },
-                    label: function (data) {
-                      return "Number of Visitors(Avg): " + data.raw;
-                    },
-                    labelTextColor: function (data) {
-                      return "#979797";
-                    },
-                  },
-                  backgroundColor: "white",
-                  borderColor: "#979797",
-                  borderWidth: "1",
-                  caretSize: 6,
-                  padding: 15,
+
+                  enabled:false,
+                  external: function(context) {
+                    // Tooltip Element
+                    let tooltipEl = document.getElementById('chartjs-tooltip');
+
+                    // Create element on first render
+                    if (!tooltipEl) {
+                        tooltipEl = document.createElement('div');
+                        tooltipEl.id = 'chartjs-tooltip';
+                        tooltipEl.innerHTML = '<table></table>';
+                        document.body.appendChild(tooltipEl);
+                    }
+
+                    // Hide if no tooltip
+                    const tooltipModel = context.tooltip;
+                    //console.log("gg",tooltipModel)
+                    if (tooltipModel.opacity === 0) {
+                        tooltipEl.style.opacity = 0;
+                        return;
+                    }
+
+                    // Set caret Position
+                    tooltipEl.classList.remove('above', 'below', 'no-transform');
+                    if (tooltipModel.yAlign) {
+                        tooltipEl.classList.add(tooltipModel.yAlign);
+                    } else {
+                        tooltipEl.classList.add('no-transform');
+                    }
+
+                    function getBody(bodyItem){
+                        return bodyItem.lines;
+                    }
+
+                    // Set Text
+                    if (tooltipModel.body) {
+                        const titleLines = tooltipModel.title || [];
+                        const bodyLines = tooltipModel.body.map(getBody);
+
+                        let innerHtml = '<thead style= color:#4c4c4c;text-align:left;>';
+
+                        titleLines.forEach(function(title) {
+                            innerHtml += '<tr><th>' + title + '</th></tr>';
+                        });
+                        innerHtml += '</thead><tbody>';
+
+                        bodyLines.forEach(function(body,i) {
+                          
+                            const colors = tooltipModel.labelColors[i];
+                            const name=tooltipModel.dataPoints[i].dataset.name
+                            let style = 'background-color:' + colors.backgroundColor;
+                            style += '; border-color:' + colors.borderColor;
+                            style += '; border-width: 2px';
+                            style+= '; width:10px;height:10px;display:inline-block;border-radius:50%';
+                            const span = '<span style="' + style + '"></span>';
+                          //  console.log("span",span)
+                            innerHtml += '<tr><td style=padding-top:10px>'+span+'</td><td style=font-size:14px;padding-top:10px;>'+name+'</td><td style=color:#4c4c4c;font-size:14px;font-weight:bold;padding-top:10px;padding-left:10px>'+body+'</td></tr>';
+                            //console.log("innerHtml",innerHtml)
+                        });
+                        innerHtml += '</tbody>';
+
+                        let tableRoot = tooltipEl.querySelector('table');
+                        tableRoot.innerHTML = innerHtml;
+                    }
+
+                    const position = context.chart.canvas.getBoundingClientRect();
+                    const bodyFont = Chart.helpers.toFont(tooltipModel.options.bodyFont);
+
+                    // Display, position, and set styles for font
+                    tooltipEl.style.opacity = 1;
+                    tooltipEl.style.position = "absolute";
+                    tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX + 'px';
+                    tooltipEl.style.top = position.top + window.pageYOffset + tooltipModel.caretY + 'px';
+                    tooltipEl.style.zIndex=1;
+                    tooltipEl.style.font = bodyFont.string;
+                    tooltipEl.style.padding = tooltipModel.padding + 'px ' + tooltipModel.padding + 'px';
+                    tooltipEl.style.pointerEvents = 'none';
+                  }
+
+
+                  
+                  // displayColors: true,
+                  // boxPadding:5,
+                  // bodySpacing: 8,
+                  // bodyFont: {
+                  //   size: 14,
+                  // },
+                  // // callbacks: {
+                  // //   title: function (data) {
+                  // //     console.log(data)
+                  // //     console.log(data[0].label)
+                  // //     return data[0].label;
+                  // //   },
+                  // //   // beforeLabel: function (data) {
+                  // //   //   //console.log("tittle",data)
+                  // //   //   return "Arrival Time: " + data.label;
+                  // //   // },
+                  // //   // label: function (data) {
+                  // //   //   return "Number of Occupants(Avg): " + data.raw;
+                  // //   // },
+                  // //   // labelTextColor: function (data) {
+                  // //   //   return "#979797";
+                  // //   // },
+                  // // },
+                  // callbacks:{ 
+                  //   label: function (data){
+                  //     console.log(data)
+                  //     return data.dataset.name +" "+data.raw
+                  //   },
+                  //   labelTextColor: function(data){
+                  //     return "#979797"
+                  //   }
+                  // },
+                  // titleColor:"black",
+                  // backgroundColor: "white",
+                  // borderColor: "#979797",
+                  // boxWidth:10,
+                  // boxHeight:10,
+                  // borderWidth: "1",
+                  // caretSize: 6,
+                  // padding: 15,
+                  
                 },
                 datalabels: {
-                  anchor: "end",
-                  align: "top",
-                  color: "#00365F",
+                  display:false
+                  // anchor: "end",
+                  // align: "top",
+                  // color: "#00365F",
                 },
                 legend: {
                   display: false,
@@ -193,12 +453,13 @@
               },
               scales: {
                 x: {
+                  stacked:true,
                   title:{ 
                     padding:{ 
                       top:15
                     },
                     display:true,
-                    text:"Depature Time",
+                    text:"Arrival Time",
                     color:"black",
                     font:{ 
                       size:12
@@ -217,7 +478,7 @@
                       bottom:15
                     },
                     display:true,
-                    text:"Number of Visitors(Avg)",
+                    text:"Number of Occupants(Avg)",
                     color:"black",
                     font:{ 
                       size:12
@@ -234,25 +495,11 @@
                 },
               },
             },
-          },
+          }
 
-          option: {
-            method: "put",
-            data: {
-              reportId: 574,
-            },
-          },
-          optionNew: {
-            method: "put",
-            data: {
-              reportId: 574,
-            },
-          },
-        };
-      },
 
-      async mounted() {
-        function average(res) {
+
+        function average(res,filterCheck,array) {
           //finding the count of days or date or hour between the given range
 
           var start, filter, operatorId, startDate, endDate;
@@ -284,27 +531,28 @@
               startDate.setDate(startDate.getDate() + 1);
             }
           } else if (filter == "HOURSOFDAY") {
-            if (operatorId == 46 || operatorId == 47 || operatorId == 48) {
-              var lastFullDay = new Date(endDate);
-              lastFullDay.setDate(endDate.getDate() - 1);
-              var millisec = lastFullDay.getTime() - startDate.getTime();
-              var noOfHours = Math.ceil(
-                millisechoursCount / (24 * 60 * 60 * 1000)
-              );
-
-              for (let i = 0; i <= 23; i++) {
-                hoursCount[i] = noOfHours;
-              }
-              for (let i = 0; i <= endDate.getHours(); i++) {
-                hoursCount[i] += 1;
-              }
-            } else {
-              var millisec = endDate.getTime() - startDate.getTime();
+              removeDay=0
+              var millisec = endDate.getTime()-startDate.getTime();
               var noOfHours = Math.ceil(millisec / (24 * 60 * 60 * 1000));
-              for (let i = 0; i <= 23; i++) {
-                hoursCount[i] = noOfHours;
+              if(filterCheck==true){
+                   while(startDate<=endDate){
+                    if(startDate.getDay()==0){
+                      day=7
+                    }
+                    else{ 
+                      day=startDate.getDay()
+                    }
+                     if(array.includes(day.toString())){ }
+                     else{ 
+                      removeDay+=1
+                     }
+                    startDate.setDate(startDate.getDate() + 1);
+                   }   
               }
-            }
+              for (let i = 0; i <= 23; i++) {
+                hoursCount[i] = noOfHours-removeDay
+              }
+            
           }
 
           //finding the average value
@@ -331,20 +579,30 @@
             ];
             console.log(res)
             if(res.data.report.dataPoints[0].groupByFields!==undefined){
-               groupbyField=res.data.report.dataPoints[0].groupByFields[0];
-               var avgWeekDaysGroupBy={
+                 groupbyField=res.data.report.dataPoints[0].groupByFields[0]
+                 var avgWeekDaysGroupBy={
                }
                var keys=Object.keys(groupbyField.lookupMap)
-               console.log(keys)
                keys.forEach(function(ids){
-                avgWeekDaysGroupBy[ids]=[0,0,0,0,0,0,0];
+                avgWeekDaysGroupBy[ids]=[];
                })
-
-               for(let i=0;i<=data.length;i++){
+               for(let i=0;i<data.length;i++){
                 tempDate=new Date(data[i].X)
-                for (let j=0;j<=groupbyField.fieldName.length)
+                for(let j=0;j<data[i][groupbyField.fieldName].length;j++){
+                    checkData=Math.round(data[i][groupbyField.fieldName][j].Id/daysCount[tempDate.getDay()])
+                    if(checkData>0){
+                      if(tempDate.getDay()==0){
+                        avgWeekDaysGroupBy[data[i][groupbyField.fieldName][j][groupbyField.fieldName]][6]=checkData;
+                      }
+                      else{ 
+                        avgWeekDaysGroupBy[data[i][groupbyField.fieldName][j][groupbyField.fieldName]][tempDate.getDay()-1]=checkData;
+                      }
+              }
+                }
                }
-
+               console.log(avgWeekDaysGroupBy)
+               return[avgWeekDaysGroupBy,weekDaysLabel]
+            
             }
             else{
                 for (let i = 0; i < data.length; i++) {
@@ -454,12 +712,31 @@
             return [avgHoursOfDay, hoursOfDayLabel];
           }
         }
+       
 
         window.facilioApp = FacilioAppSDK.init();
         
         let self =this;
        window.facilioApp.on("app.loaded", (dataApp) => {
            self.appResponse = dataApp;
+           this.createdTime=false;
+           if (self.appResponse.context.dashboardFilter.userFilters!==undefined && self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].defaultValues==85){
+                 this.createdTime=true;
+                 fieldNameOfCreatedTime=self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].field.name
+           createdTimeFilter= {
+           }
+           createdTimeFilter[fieldNameOfCreatedTime]={
+            operatorId:85,
+            value:[]
+           }
+                 this.array=createdTimeFilter[fieldNameOfCreatedTime].value
+                 rangeOfCreatedTime =self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].selectedSliderRangeValues
+                 for(let i=1;i<=rangeOfCreatedTime[1];i++){
+                  this.array[i-1]=i.toString();
+                 }
+                 createdTimeFilter=JSON.stringify(createdTimeFilter)
+                 self.option.data.filters=createdTimeFilter;
+           }
            if(self.appResponse.context.dashboardFilter.timelineFilter!=null){
            self.option.data.startTime=self.appResponse.context.dashboardFilter.timelineFilter.startTime;
            self.option.data.endTime=self.appResponse.context.dashboardFilter.timelineFilter.endTime;
@@ -467,17 +744,67 @@
         window.facilioApp.request
           .invokeFacilioAPI("/v3/report/execute", self.option)
           .then((res) => {
+            console.log(res)
             this.loading = false;
             if (res.data.reportData.data.length == 0) {
               this.isShowEmptyPage = true;         
             } else {
               this.isShowChart = false;
-              this.response = average(res);
-              this.config.data.labels = this.response[1];
-              this.config.data.datasets[0].data = this.response[0];
+              this.response = average(res,this.createdTime,this.array);
+              if(res.data.report.dataPoints[0].groupByFields!==undefined){
+                var fields=Object.keys(this.response[0])
+                config.data.datasets=[]
+                config.data.labels=this.response[1]
+                for (let i=0;i<fields.length;i++){
+                  config.data.datasets[i]={}
+                  config.data.datasets[i].data=this.response[0][fields[i]]
+                  config.data.datasets[i].backgroundColor="#7bfbff";
+                  console.log(this.response[0][fields[i]]);
+                  config.data.datasets[i].name=res.data.report.dataPoints[0].groupByFields[0].lookupMap[fields[i]]
+                  console.log("he",config)
+                  switch(fields[i]){
+                      case "1460044": 
+                        config.data.datasets[i].backgroundColor="#7bfbff";
+                        break;
+                      case "1460045": 
+                        config.data.datasets[i].backgroundColor="#00ca54";
+                        break;
+                      case "1460046": 
+                        config.data.datasets[i].backgroundColor="#00bc9c";
+                        break;
+                      case "1460047": 
+                        config.data.datasets[i].backgroundColor="#ff176d";
+                        break;
+                      case "1460048": 
+                        config.data.datasets[i].backgroundColor="#3a2c38";
+                        break;
+                      case "1460049": 
+                        config.data.datasets[i].backgroundColor="#ffa19c";
+                        break;
+                      case "1460079": 
+                        config.data.datasets[i].backgroundColor="#ffe582";
+                        break;
+                      case "1554346": 
+                        config.data.datasets[i].backgroundColor="#790023";
+                        break;
+                      case "1591917": 
+                        config.data.datasets[i].backgroundColor="#273b00";
+                        break;
+                  }
+                  config.data.datasets[i].stack="stack "+i
+                  // this.config.data.datasets[i].backgroundColor="#00365F",
+                  // console.log(this.config.data.datasets[i])   
+                }
+                console.log(config.data.datasets)
+              }
+              else{ 
+                config.data.labels = this.response[1];
+              config.data.datasets[0].data = this.response[0];
+              }
+              console.log(config)
               this.myChart = new Chart(
                 document.getElementById("Chart"),
-                this.config
+                config
               );
             }
 
@@ -489,30 +816,152 @@
                 data.dashboardFilter.timelineFilter.startTime;
               this.optionNew.data.endTime =
                 data.dashboardFilter.timelineFilter.endTime;
+              this.createdTime=false;
+
+           if (self.appResponse.context.dashboardFilter.userFilters!==undefined  && self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].defaultValues==85){
+                 this.createdTime=true;
+                 createdTimeFilter= {
+
+}
+createdTimeFilter[fieldNameOfCreatedTime]={
+ operatorId:85,
+ value:[]
+}
+                 if(data.dashboardFilter.userFilters.filterMeta[0].dateTimeValues!==undefined){
+                      this.array=data.dashboardFilter.userFilters.filterMeta[0].dateTimeValues
+                       
+                 }else{ 
+                  rangeOfCreatedTime =data.dashboardFilter.userFilters.filterMeta[0].selectedSliderRangeValues
+                  for(let i=rangeOfCreatedTime[0];i<=rangeOfCreatedTime[1];i++){
+                
+                  this.array[i-1]=i.toString();
+                 }
+                 }
+                 createdTimeFilter[fieldNameOfCreatedTime].value=this.array
+                 createdTimeFilter=JSON.stringify(createdTimeFilter)
+              
+                 self.optionNew.data.filters=createdTimeFilter;
+           }
 
               window.facilioApp.request
                 .invokeFacilioAPI("/v3/report/execute", this.optionNew)
                 .then((res) => {
+        
                   this.loading = false;
                   if (res.data.reportData.data.length == 0) {
                     this.isShowEmptyPage = true;
                   } else {
                     if (this.myChart == null) {
                       this.isShowChart = false;
-
-                      this.response = average(res);
-                      this.config.data.labels = this.response[1];
-                      this.config.data.datasets[0].data = this.response[0];
+                      this.response = average(res,this.createdTime,this.array);
+                      if(res.data.report.dataPoints[0].groupByFields!==undefined){
+                var fields=Object.keys(this.response[0])
+                config.data.datasets=[]
+                config.data.labels=this.response[1]
+                for (let i=0;i<fields.length;i++){
+                  config.data.datasets[i]={}
+                  config.data.datasets[i].data=this.response[0][fields[i]]
+                  config.data.datasets[i].backgroundColor="#7bfbff";
+                  console.log(this.response[0][fields[i]]);
+                  config.data.datasets[i].name=res.data.report.dataPoints[0].groupByFields[0].lookupMap[fields[i]]
+                  console.log("he",config)
+                  switch(fields[i]){
+                      case "1460044": 
+                        config.data.datasets[i].backgroundColor="#7bfbff";
+                        break;
+                      case "1460045": 
+                        config.data.datasets[i].backgroundColor="#00ca54";
+                        break;
+                      case "1460046": 
+                        config.data.datasets[i].backgroundColor="#00bc9c";
+                        break;
+                      case "1460047": 
+                        config.data.datasets[i].backgroundColor="#ff176d";
+                        break;
+                      case "1460048": 
+                        config.data.datasets[i].backgroundColor="#3a2c38";
+                        break;
+                      case "1460049": 
+                        config.data.datasets[i].backgroundColor="#ffa19c";
+                        break;
+                      case "1460079": 
+                        config.data.datasets[i].backgroundColor="#ffe582";
+                        break;
+                      case "1554346": 
+                        config.data.datasets[i].backgroundColor="#790023";
+                        break;
+                      case "1591917": 
+                        config.data.datasets[i].backgroundColor="#273b00";
+                        break;
+                  }
+                  config.data.datasets[i].stack="stack "+i
+                  // this.config.data.datasets[i].backgroundColor="#00365F",
+                  // console.log(this.config.data.datasets[i])   
+                }
+                console.log(config.data.datasets)
+              }
+              else{ 
+                config.data.labels = this.response[1];
+              config.data.datasets[0].data = this.response[0];
+              }
 
                       this.myChart = new Chart(
                         document.getElementById("Chart"),
-                        this.config
+                        config
                       );
                     } else {
                       this.isShowChart = false;
-                      this.response = average(res);
-                      this.myChart.data.datasets[0].data = this.response[0];
-                      this.myChart.data.labels = this.response[1];
+                      this.response = average(res,this.createdTime,this.array);
+                      if(res.data.report.dataPoints[0].groupByFields!==undefined){
+                var fields=Object.keys(this.response[0])
+                config.data.datasets=[]
+                config.data.labels=this.response[1]
+                for (let i=0;i<fields.length;i++){
+                  config.data.datasets[i]={}
+                  config.data.datasets[i].data=this.response[0][fields[i]]
+                  config.data.datasets[i].backgroundColor="#7bfbff";
+                  console.log(this.response[0][fields[i]]);
+                  config.data.datasets[i].name=res.data.report.dataPoints[0].groupByFields[0].lookupMap[fields[i]]
+                  console.log("he",config)
+                  switch(fields[i]){
+                      case "1460044": 
+                        config.data.datasets[i].backgroundColor="#7bfbff";
+                        break;
+                      case "1460045": 
+                        config.data.datasets[i].backgroundColor="#00ca54";
+                        break;
+                      case "1460046": 
+                        config.data.datasets[i].backgroundColor="#00bc9c";
+                        break;
+                      case "1460047": 
+                        config.data.datasets[i].backgroundColor="#ff176d";
+                        break;
+                      case "1460048": 
+                        config.data.datasets[i].backgroundColor="#3a2c38";
+                        break;
+                      case "1460049": 
+                        config.data.datasets[i].backgroundColor="#ffa19c";
+                        break;
+                      case "1460079": 
+                        config.data.datasets[i].backgroundColor="#ffe582";
+                        break;
+                      case "1554346": 
+                        config.data.datasets[i].backgroundColor="#790023";
+                        break;
+                      case "1591917": 
+                        config.data.datasets[i].backgroundColor="#273b00";
+                        break;
+                  }
+                  config.data.datasets[i].stack="stack "+i
+                  // this.config.data.datasets[i].backgroundColor="#00365F",
+                  // console.log(this.config.data.datasets[i])   
+                }
+                console.log(config.data.datasets)
+              }
+              else{ 
+                config.data.labels = this.response[1];
+              config.data.datasets[0].data = this.response[0];
+              }
                       this.myChart.update();
                     }
                   }
@@ -525,3 +974,5 @@
     });
   </script>
 </html>
+
+
