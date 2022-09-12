@@ -279,13 +279,13 @@
           option: {
             method: "put",
             data: {
-              reportId: 574,
+              reportId: 570,
             },
           },
           optionNew: {
             method: "put",
             data: {
-              reportId: 574,
+              reportId: 570,
             },
           },
         };
@@ -390,10 +390,10 @@
                     // Display, position, and set styles for font
                     tooltipEl.style.opacity = 1;
                     tooltipEl.style.position = "absolute";
-                    console.log("tooltip",tooltipModel)
-                    console.log(window.pageXOffset,window.pageYOffset,position.left,position.top,tooltipModel.caretX,tooltipModel.caretY)
+                    // console.log("tooltip",tooltipModel)
+                    // console.log(window.pageXOffset,window.pageYOffset,position.left,position.top,tooltipModel.caretX,tooltipModel.caretY)
 
-                    tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX+'px';
+                    tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX + 'px';
                     tooltipEl.style.top = position.top + window.pageYOffset +tooltipModel.caretY+ 'px';
                     tooltipEl.style.font = bodyFont.string;
                     tooltipEl.style.padding = tooltipModel.padding + 'px ' + tooltipModel.padding + 'px';
@@ -580,30 +580,40 @@
               "Sat",
               "Sun",
             ];
-            console.log(res)
             if(res.data.report.dataPoints[0].groupByFields!==undefined){
                  groupbyField=res.data.report.dataPoints[0].groupByFields[0]
                  var avgWeekDaysGroupBy={
                }
                var keys=Object.keys(groupbyField.lookupMap)
+               console.log(keys)
                keys.forEach(function(ids){
                 avgWeekDaysGroupBy[ids]=[];
                })
+               console.log(avgWeekDaysGroupBy)
+               console.log(res)
                for(let i=0;i<data.length;i++){
                 tempDate=new Date(data[i].X)
+                console.log(tempDate)
+                console.log(tempDate.getDay()-1);
                 for(let j=0;j<data[i][groupbyField.fieldName].length;j++){
                     checkData=Math.round(data[i][groupbyField.fieldName][j].Id/daysCount[tempDate.getDay()])
                     if(checkData>0){
                       if(tempDate.getDay()==0){
+                        if(keys.includes(data[i][groupbyField.fieldName][j][groupbyField.fieldName].toString())){
                         avgWeekDaysGroupBy[data[i][groupbyField.fieldName][j][groupbyField.fieldName]][6]=checkData;
+                        }
                       }
                       else{ 
-                        avgWeekDaysGroupBy[data[i][groupbyField.fieldName][j][groupbyField.fieldName]][tempDate.getDay()-1]=checkData;
+                        console.log(data[i][groupbyField.fieldName][j][groupbyField.fieldName])
+                        if(keys.includes(data[i][groupbyField.fieldName][j][groupbyField.fieldName].toString())){
+                          avgWeekDaysGroupBy[data[i][groupbyField.fieldName][j][groupbyField.fieldName]][tempDate.getDay()-1]=checkData;
+                        }
                       }
               }
                 }
+                console.log(avgWeekDaysGroupBy)
                }
-               console.log(avgWeekDaysGroupBy)
+               
                return[avgWeekDaysGroupBy,weekDaysLabel]
             
             }
@@ -625,7 +635,6 @@
                   avgWeekDays[tempDate.getDay()-1]=checkData;
                 }
               }
-              console.log(avgWeekDays, weekDaysLabel);
             }
             return [avgWeekDays, weekDaysLabel];
           }
@@ -722,6 +731,7 @@
         let self =this;
        window.facilioApp.on("app.loaded", (dataApp) => {
            self.appResponse = dataApp;
+           console.log(self.appResponse)
            this.createdTime=false;
            if (self.appResponse.context.dashboardFilter.userFilters!==undefined && self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].defaultValues==85){
                  this.createdTime=true;
@@ -764,7 +774,6 @@
                   config.data.datasets[i].backgroundColor="#7bfbff";
                   console.log(this.response[0][fields[i]]);
                   config.data.datasets[i].name=res.data.report.dataPoints[0].groupByFields[0].lookupMap[fields[i]]
-                  console.log("he",config)
                   switch(fields[i]){
                       case "1460044": 
                         config.data.datasets[i].backgroundColor="#7bfbff";
@@ -784,6 +793,27 @@
                       case "1460049": 
                         config.data.datasets[i].backgroundColor="#ffa19c";
                         break;
+                      case "1460052": 
+                        config.data.datasets[i].backgroundColor="#cce7ff";
+                        break;
+                      case "1460053": 
+                        config.data.datasets[i].backgroundColor="#007fb2";
+                        break;
+                      case "1460055": 
+                        config.data.datasets[i].backgroundColor="#f330b7";
+                        break;
+                      case "1460057": 
+                        config.data.datasets[i].backgroundColor="#00abfd";
+                        break;
+                      case "1460059": 
+                        config.data.datasets[i].backgroundColor="#b9e024";
+                        break;
+                      case "1460061": 
+                        config.data.datasets[i].backgroundColor="#4d0e6d";
+                        break;
+                      case "1460063": 
+                        config.data.datasets[i].backgroundColor="#c3ff8b";
+                        break;
                       case "1460079": 
                         config.data.datasets[i].backgroundColor="#ffe582";
                         break;
@@ -798,13 +828,11 @@
                   // this.config.data.datasets[i].backgroundColor="#00365F",
                   // console.log(this.config.data.datasets[i])   
                 }
-                console.log(config.data.datasets)
               }
               else{ 
                 config.data.labels = this.response[1];
               config.data.datasets[0].data = this.response[0];
               }
-              console.log(config)
               this.myChart = new Chart(
                 document.getElementById("Chart"),
                 config
@@ -865,10 +893,10 @@ createdTimeFilter[fieldNameOfCreatedTime]={
                   config.data.datasets[i]={}
                   config.data.datasets[i].data=this.response[0][fields[i]]
                   config.data.datasets[i].backgroundColor="#7bfbff";
-                  console.log(this.response[0][fields[i]]);
+                  
                   config.data.datasets[i].name=res.data.report.dataPoints[0].groupByFields[0].lookupMap[fields[i]]
-                  console.log("he",config)
-                  switch(fields[i]){
+                
+                switch(fields[i]){
                       case "1460044": 
                         config.data.datasets[i].backgroundColor="#7bfbff";
                         break;
@@ -887,6 +915,27 @@ createdTimeFilter[fieldNameOfCreatedTime]={
                       case "1460049": 
                         config.data.datasets[i].backgroundColor="#ffa19c";
                         break;
+                      case "1460052": 
+                        config.data.datasets[i].backgroundColor="#cce7ff";
+                        break;
+                      case "1460053": 
+                        config.data.datasets[i].backgroundColor="#007fb2";
+                        break;
+                      case "1460055": 
+                        config.data.datasets[i].backgroundColor="#f330b7";
+                        break;
+                      case "1460057": 
+                        config.data.datasets[i].backgroundColor="#00abfd";
+                        break;
+                      case "1460059": 
+                        config.data.datasets[i].backgroundColor="#b9e024";
+                        break;
+                      case "1460061": 
+                        config.data.datasets[i].backgroundColor="#4d0e6d";
+                        break;
+                      case "1460063": 
+                        config.data.datasets[i].backgroundColor="#c3ff8b";
+                        break;
                       case "1460079": 
                         config.data.datasets[i].backgroundColor="#ffe582";
                         break;
@@ -901,7 +950,7 @@ createdTimeFilter[fieldNameOfCreatedTime]={
                   // this.config.data.datasets[i].backgroundColor="#00365F",
                   // console.log(this.config.data.datasets[i])   
                 }
-                console.log(config.data.datasets)
+        
               }
               else{ 
                 config.data.labels = this.response[1];
@@ -923,9 +972,10 @@ createdTimeFilter[fieldNameOfCreatedTime]={
                   config.data.datasets[i]={}
                   config.data.datasets[i].data=this.response[0][fields[i]]
                   config.data.datasets[i].backgroundColor="#7bfbff";
-                  console.log(this.response[0][fields[i]]);
+        
                   config.data.datasets[i].name=res.data.report.dataPoints[0].groupByFields[0].lookupMap[fields[i]]
-                  console.log("he",config)
+    
+                
                   switch(fields[i]){
                       case "1460044": 
                         config.data.datasets[i].backgroundColor="#7bfbff";
@@ -945,6 +995,27 @@ createdTimeFilter[fieldNameOfCreatedTime]={
                       case "1460049": 
                         config.data.datasets[i].backgroundColor="#ffa19c";
                         break;
+                      case "1460052": 
+                        config.data.datasets[i].backgroundColor="#cce7ff";
+                        break;
+                      case "1460053": 
+                        config.data.datasets[i].backgroundColor="#007fb2";
+                        break;
+                      case "1460055": 
+                        config.data.datasets[i].backgroundColor="#f330b7";
+                        break;
+                      case "1460057": 
+                        config.data.datasets[i].backgroundColor="#00abfd";
+                        break;
+                      case "1460059": 
+                        config.data.datasets[i].backgroundColor="#b9e024";
+                        break;
+                      case "1460061": 
+                        config.data.datasets[i].backgroundColor="#4d0e6d";
+                        break;
+                      case "1460063": 
+                        config.data.datasets[i].backgroundColor="#c3ff8b";
+                        break;
                       case "1460079": 
                         config.data.datasets[i].backgroundColor="#ffe582";
                         break;
@@ -955,11 +1026,12 @@ createdTimeFilter[fieldNameOfCreatedTime]={
                         config.data.datasets[i].backgroundColor="#273b00";
                         break;
                   }
+
                   config.data.datasets[i].stack="stack "+i
                   // this.config.data.datasets[i].backgroundColor="#00365F",
                   // console.log(this.config.data.datasets[i])   
                 }
-                console.log(config.data.datasets)
+    
               }
               else{ 
                 config.data.labels = this.response[1];
