@@ -390,8 +390,8 @@
                     // Display, position, and set styles for font
                     tooltipEl.style.opacity = 1;
                     tooltipEl.style.position = "absolute";
-                    console.log("tooltip",tooltipModel)
-                    console.log(window.pageXOffset,window.pageYOffset,position.left,position.top,tooltipModel.caretX,tooltipModel.caretY)
+                    
+                    //console.log(window.pageXOffset,window.pageYOffset,position.left,position.top,tooltipModel.caretX,tooltipModel.caretY)
 
                     tooltipEl.style.left = position.left + window.pageXOffset + tooltipModel.caretX+'px';
                     tooltipEl.style.top = position.top + window.pageYOffset +tooltipModel.caretY+ 'px';
@@ -603,7 +603,7 @@
               }
                 }
                }
-               console.log(avgWeekDaysGroupBy)
+               //console.log(avgWeekDaysGroupBy)
                return[avgWeekDaysGroupBy,weekDaysLabel]
             
             }
@@ -625,7 +625,7 @@
                   avgWeekDays[tempDate.getDay()-1]=checkData;
                 }
               }
-              console.log(avgWeekDays, weekDaysLabel);
+             // console.log(avgWeekDays, weekDaysLabel);
             }
             return [avgWeekDays, weekDaysLabel];
           }
@@ -747,7 +747,7 @@
         window.facilioApp.request
           .invokeFacilioAPI("/v3/report/execute", self.option)
           .then((res) => {
-            console.log(res)
+            //console.log(res)
             this.loading = false;
             if (res.data.reportData.data.length == 0) {
               this.isShowEmptyPage = true;         
@@ -762,9 +762,9 @@
                   config.data.datasets[i]={}
                   config.data.datasets[i].data=this.response[0][fields[i]]
                   config.data.datasets[i].backgroundColor="#7bfbff";
-                  console.log(this.response[0][fields[i]]);
+                  //console.log(this.response[0][fields[i]]);
                   config.data.datasets[i].name=res.data.report.dataPoints[0].groupByFields[0].lookupMap[fields[i]]
-                  console.log("he",config)
+                  //console.log("he",config)
                   switch(fields[i]){
                       case "1460044": 
                         config.data.datasets[i].backgroundColor="#7bfbff";
@@ -798,13 +798,13 @@
                   // this.config.data.datasets[i].backgroundColor="#00365F",
                   // console.log(this.config.data.datasets[i])   
                 }
-                console.log(config.data.datasets)
+              //  console.log(config.data.datasets)
               }
               else{ 
                 config.data.labels = this.response[1];
               config.data.datasets[0].data = this.response[0];
               }
-              console.log(config)
+             // console.log(config)
               this.myChart = new Chart(
                 document.getElementById("Chart"),
                 config
@@ -815,11 +815,14 @@
               this.loading = true;
               this.isShowChart = true;
               this.isShowEmptyPage = false;
-              this.optionNew.data.startTime =
+              this.createdTime=false;
+              console.log(data)
+              if(data.dashboardFilter.timelineFilter!=null){
+                this.optionNew.data.startTime =
                 data.dashboardFilter.timelineFilter.startTime;
               this.optionNew.data.endTime =
                 data.dashboardFilter.timelineFilter.endTime;
-              this.createdTime=false;
+              }
 
            if (self.appResponse.context.dashboardFilter.userFilters!==undefined  && self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].defaultValues==85){
                  this.createdTime=true;
@@ -865,9 +868,9 @@ createdTimeFilter[fieldNameOfCreatedTime]={
                   config.data.datasets[i]={}
                   config.data.datasets[i].data=this.response[0][fields[i]]
                   config.data.datasets[i].backgroundColor="#7bfbff";
-                  console.log(this.response[0][fields[i]]);
+                  //console.log(this.response[0][fields[i]]);
                   config.data.datasets[i].name=res.data.report.dataPoints[0].groupByFields[0].lookupMap[fields[i]]
-                  console.log("he",config)
+                 // console.log("he",config)
                   switch(fields[i]){
                       case "1460044": 
                         config.data.datasets[i].backgroundColor="#7bfbff";
@@ -901,7 +904,7 @@ createdTimeFilter[fieldNameOfCreatedTime]={
                   // this.config.data.datasets[i].backgroundColor="#00365F",
                   // console.log(this.config.data.datasets[i])   
                 }
-                console.log(config.data.datasets)
+               // console.log(config.data.datasets)
               }
               else{ 
                 config.data.labels = this.response[1];
@@ -923,9 +926,9 @@ createdTimeFilter[fieldNameOfCreatedTime]={
                   config.data.datasets[i]={}
                   config.data.datasets[i].data=this.response[0][fields[i]]
                   config.data.datasets[i].backgroundColor="#7bfbff";
-                  console.log(this.response[0][fields[i]]);
+               //   console.log(this.response[0][fields[i]]);
                   config.data.datasets[i].name=res.data.report.dataPoints[0].groupByFields[0].lookupMap[fields[i]]
-                  console.log("he",config)
+              //    console.log("he",config)
                   switch(fields[i]){
                       case "1460044": 
                         config.data.datasets[i].backgroundColor="#7bfbff";
@@ -959,7 +962,7 @@ createdTimeFilter[fieldNameOfCreatedTime]={
                   // this.config.data.datasets[i].backgroundColor="#00365F",
                   // console.log(this.config.data.datasets[i])   
                 }
-                console.log(config.data.datasets)
+              //  console.log(config.data.datasets)
               }
               else{ 
                 config.data.labels = this.response[1];

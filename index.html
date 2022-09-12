@@ -494,10 +494,12 @@
                 this.loading = true;
                 this.isShowChart = true;
                 this.isShowEmptyPage = false;
+                if(data.dashboardFilter.timelineFilter!=null){
                 this.optionNew.data.startTime =
-                  data.dashboardFilter.timelineFilter.startTime;
-                this.optionNew.data.endTime =
-                  data.dashboardFilter.timelineFilter.endTime;
+                data.dashboardFilter.timelineFilter.startTime;
+              this.optionNew.data.endTime =
+                data.dashboardFilter.timelineFilter.endTime;
+              }
                 this.createdTime = false;
 
                 if (

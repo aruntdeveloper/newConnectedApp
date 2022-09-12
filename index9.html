@@ -843,11 +843,13 @@
               this.loading = true;
               this.isShowChart = true;
               this.isShowEmptyPage = false;
-              this.optionNew.data.startTime =
+              this.createdTime=false;
+              if(data.dashboardFilter.timelineFilter!=null){
+                this.optionNew.data.startTime =
                 data.dashboardFilter.timelineFilter.startTime;
               this.optionNew.data.endTime =
                 data.dashboardFilter.timelineFilter.endTime;
-              this.createdTime=false;
+              }
 
            if (self.appResponse.context.dashboardFilter.userFilters!==undefined  && self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].defaultValues==85){
                  this.createdTime=true;
