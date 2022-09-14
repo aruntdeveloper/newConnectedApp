@@ -437,23 +437,34 @@
        window.facilioApp.on("app.loaded", (dataApp) => {
            self.appResponse = dataApp;
            this.createdTime=false;
-           if (self.appResponse.context.dashboardFilter.userFilters!==undefined && self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].defaultValues==85){
-                 this.createdTime=true;
-                 fieldNameOfCreatedTime=self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].field.name
-           createdTimeFilter= {
-           }
-           createdTimeFilter[fieldNameOfCreatedTime]={
-            operatorId:85,
-            value:[]
-           }
-                 this.array=createdTimeFilter[fieldNameOfCreatedTime].value
-                 rangeOfCreatedTime =self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].selectedSliderRangeValues
-                 for(let i=1;i<=rangeOfCreatedTime[1];i++){
-                  this.array[i-1]=i.toString();
-                 }
-                 createdTimeFilter=JSON.stringify(createdTimeFilter)
-                 self.option.data.filters=createdTimeFilter;
-           }
+           if (
+            self.appResponse.context.dashboardFilter.userFilters !==
+              undefined) { 
+              for (let i=0;i<self.appResponse.context.dashboardFilter.userFilters.filterMeta.length;i++){ 
+                if(self.appResponse.context.dashboardFilter.userFilters.filterMeta[i]
+              .defaultValues == 85){
+            this.createdTime = true;
+            fieldNameOfCreatedTime =
+              self.appResponse.context.dashboardFilter.userFilters.filterMeta[i]
+                .field.name;
+            createdTimeFilter = {};
+            createdTimeFilter[fieldNameOfCreatedTime] = {
+              operatorId: 85,
+              value: [],
+            };
+            this.array = createdTimeFilter[fieldNameOfCreatedTime].value;
+            rangeOfCreatedTime =
+              self.appResponse.context.dashboardFilter.userFilters.filterMeta[i]
+                .selectedSliderRangeValues;
+            for (let i = 1; i <= rangeOfCreatedTime[1]; i++) {
+              this.array[i - 1] = i.toString();
+            }
+          
+            createdTimeFilter = JSON.stringify(createdTimeFilter);
+            self.option.data.filters = createdTimeFilter;
+                }
+              }
+              }
            if(self.appResponse.context.dashboardFilter.timelineFilter!=null){
            self.option.data.startTime=self.appResponse.context.dashboardFilter.timelineFilter.startTime;
            self.option.data.endTime=self.appResponse.context.dashboardFilter.timelineFilter.endTime;
@@ -487,8 +498,12 @@
               }
                 this.createdTime=false;
 
-if (self.appResponse.context.dashboardFilter.userFilters!==undefined  && self.appResponse.context.dashboardFilter.userFilters.filterMeta[0].defaultValues==85){
-      this.createdTime=true;
+                if(self.appResponse.context.dashboardFilter.userFilters!==undefined){
+                for (let i=0;i<self.appResponse.context.dashboardFilter.userFilters.filterMeta.length;i++){
+                  if(self.appResponse.context.dashboardFilter.userFilters.filterMeta[i]
+              .defaultValues == 85){
+
+                this.createdTime=true;
       createdTimeFilter= {
 
 }
@@ -496,11 +511,11 @@ createdTimeFilter[fieldNameOfCreatedTime]={
 operatorId:85,
 value:[]
 }
-      if(data.dashboardFilter.userFilters.filterMeta[0].dateTimeValues!==undefined){
-           this.array=data.dashboardFilter.userFilters.filterMeta[0].dateTimeValues
+      if(data.dashboardFilter.userFilters.filterMeta[i].dateTimeValues!==undefined){
+           this.array=data.dashboardFilter.userFilters.filterMeta[i].dateTimeValues
             
       }else{ 
-       rangeOfCreatedTime =data.dashboardFilter.userFilters.filterMeta[0].selectedSliderRangeValues
+       rangeOfCreatedTime =data.dashboardFilter.userFilters.filterMeta[i].selectedSliderRangeValues
        for(let i=rangeOfCreatedTime[0];i<=rangeOfCreatedTime[1];i++){
      
        this.array[i-1]=i.toString();
@@ -510,9 +525,10 @@ value:[]
       createdTimeFilter=JSON.stringify(createdTimeFilter)
    
       self.optionNew.data.filters=createdTimeFilter;
-}
+              }
+                }
 
-
+              }
 
               window.facilioApp.request
                 .invokeFacilioAPI("/v3/report/execute", this.optionNew)
